@@ -4,7 +4,6 @@
 This module defines the type of camera startup parameters and predefined constants
 """
 
-
 # 预定义常亮
 # Predefined Constants
 VGA: tuple = (640, 480)
@@ -77,6 +76,62 @@ MILLIMETER: int = 0
 Millimeter Unit
 """
 
+MAX_CAM_NUM: int = 6
+"""
+相机的最大编号为10
+\n
+The maximum number of cameras is 10
+"""
+
+LEFT_IMAGE = 0x0001
+"""
+左目图像标志
+\n
+Left Eye Image Flag
+"""
+
+RIGHT_IMAGE = 0x0010
+"""
+右目图像标志
+\n
+Right Eye Image Flag
+"""
+
+STEREO_IMAGE = 0x0011
+"""
+双目图像标志
+\n
+Binocular Image Flag
+"""
+
+DEPTH_IMAGE = 0x0100
+"""
+深度图像标志
+\n
+Depth Image Flag
+"""
+
+IMG_FMT_PNG = 0x0001
+"""
+PNG图像格式
+\n
+PNG Image Format
+"""
+
+IMG_FMT_JPG = 0x0010
+"""
+JPG图像格式
+\n
+JPG Image Format
+"""
+
+IMG_FMT_BMP = 0x0100
+"""
+BMP图像格式
+\n
+BMP Image Format
+"""
+
 
 class InitParameters:
     """
@@ -126,5 +181,3 @@ class InitParameters:
     \n
     Unit when Reading Depth Picture, Default is Millimeter
     """
-
-
