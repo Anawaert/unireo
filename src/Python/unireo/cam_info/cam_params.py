@@ -104,6 +104,8 @@ STEREO_IMAGE = 0x0011
 Binocular Image Flag
 """
 
+
+
 DEPTH_IMAGE = 0x0100
 """
 深度图像标志
@@ -123,13 +125,6 @@ IMG_FMT_JPG = 0x0010
 JPG图像格式
 \n
 JPG Image Format
-"""
-
-IMG_FMT_BMP = 0x0100
-"""
-BMP图像格式
-\n
-BMP Image Format
 """
 
 

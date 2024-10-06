@@ -191,7 +191,7 @@ class Camera:
         Save the Image of Specified Type
 
         :param image_type: 图像类型（左/右/双目/深度） Image Type (Left/Right/Stereo/Depth)
-        :param saved_format: 图像类型（PNG/JPG/BMP） Image Type (PNG/JPG/BMP)
+        :param saved_format: 图像类型（PNG/JPG） Image Type (PNG/JPG)
         :param saved_dir: 保存图像的目录 Save the Directory of the Image
         :param key: 保存图像时按下的按键 Save the Key Pressed when the Image is Saved
         :return: 错误码 Error Code
@@ -247,6 +247,47 @@ class Camera:
                     return err_code.GET_IMAGE_SAVED_FAILED
             else:
                 raise exceptions.CameraError("Invalid Image Type")
+
+        return err_code.GET_IMAGE_SAVED_SUCCESS
+
+    def get_stereo_img_saved(self, saved_format: int, left_saved_dir: str, right_saved_dir: str, key: str) -> int:
+        """
+        分别保存左右目图像
+        \n
+        Save Left and Right Eye Images Separately
+
+        :param saved_format: 图像类型（PNG/JPG） Image Type (PNG/JPG)
+        :param left_saved_dir: 保存左目图像的目录 Save the Directory of the Left Eye Image
+        :param right_saved_dir: 保存右目图像的目录 Save the Directory of the Right Eye Image
+        :param key: 保存图像时按下的按键 Save the Key Pressed when the Image is Saved
+        :return: 错误码 Error Code
+
+        示例（Example）：
+        \n
+        err_code = camera.get_stereo_img_saved(cam_info.IMG_FMT_PNG, '/path/to/save/left/', '/path/to/save/right/', 's')
+        """
+
+        # 按下指定按键后保存图像
+        # Save Image after Pressing the Specified Key
+        if cv2.waitKey(1) & 0xFF == ord(key):
+            # 获取当前时间
+            # Get Current Time
+            current_time = time.strftime("%Y%m%d%H%M%S", time.localtime())
+            if (self.__left_frame is not None) and (self.__right_frame is not None):
+                if saved_format == cam_params.IMG_FMT_PNG:
+                    cv2.imwrite(os.path.join(left_saved_dir, current_time + "_left" + ".png"), self.__left_frame)
+                    print("Saved Left Image: " + os.path.join(left_saved_dir, current_time + "_left" + ".png"))
+                    cv2.imwrite(os.path.join(right_saved_dir, current_time + "_right" + ".png"), self.__right_frame)
+                    print("Saved Right Image: " + os.path.join(right_saved_dir, current_time + "_right" + ".png"))
+                elif saved_format == cam_params.IMG_FMT_JPG:
+                    cv2.imwrite(os.path.join(left_saved_dir, current_time + "_left" + ".jpg"), self.__left_frame)
+                    print("Saved Left Image: " + os.path.join(left_saved_dir, current_time + "_left" + ".jpg"))
+                    cv2.imwrite(os.path.join(right_saved_dir, current_time + "_right" + ".jpg"), self.__right_frame)
+                    print("Saved Right Image: " + os.path.join(right_saved_dir, current_time + "_right" + ".jpg"))
+                else:
+                    raise exceptions.CameraError("Invalid Format of Saved Image")
+            else:
+                return err_code.GET_IMAGE_SAVED_FAILED
 
         return err_code.GET_IMAGE_SAVED_SUCCESS
 

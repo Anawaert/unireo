@@ -79,8 +79,8 @@ def get_calib_data(chessboard_size: tuple, square_size: int, img_shape: tuple, l
             right_img_points.append(right_corners2)
 
     if (left is not None) and (right is not None) and (left_gray is not None) and (right_gray is not None):
-        left_height, left_width, left_channels = left.shape
-        right_height, right_width, right_channels = right.shape
+        # left_height, left_width, left_channels = left.shape
+        # right_height, right_width, right_channels = right.shape
 
         # 标定相机
         # Calibrate the Camera
@@ -90,15 +90,13 @@ def get_calib_data(chessboard_size: tuple, square_size: int, img_shape: tuple, l
             obj_points, left_img_points, img_shape[0:2], None, None)
 
         new_left_camera_matrix, left_roi = cv2.getOptimalNewCameraMatrix(left_camera_matrix, left_dist_coeffs,
-                                                                         (left_width, left_height), 1,
-                                                                         (left_width, left_height))
+                                                                         img_shape[0:2], 1, img_shape[0:2])
 
         right_ret_val, right_camera_matrix, right_dist_coeffs, right_rvecs, right_tvecs = cv2.calibrateCamera(
             obj_points, right_img_points, img_shape[0:2], None, None)
 
         new_right_camera_matrix, right_roi = cv2.getOptimalNewCameraMatrix(right_camera_matrix, right_dist_coeffs,
-                                                                           (right_width, right_height), 1,
-                                                                           (right_width, right_height))
+                                                                           img_shape[0:2], 1, img_shape[0:2])
 
         # 接着执行立体标定
         # Then Execute Stereo Calibration
@@ -121,10 +119,10 @@ def get_calib_data(chessboard_size: tuple, square_size: int, img_shape: tuple, l
 
         left_stereo_map = cv2.initUndistortRectifyMap(new_left_camera_matrix, left_dist_coeffs,
                                                       left_rectification_matrix,
-                                                      left_projection_matrix, left_gray.shape[::-1], cv2.CV_32FC1)
+                                                      left_projection_matrix, left_gray.shape[::-1], cv2.CV_16SC2)
         right_stereo_map = cv2.initUndistortRectifyMap(new_right_camera_matrix, right_dist_coeffs,
                                                        right_rectification_matrix,
-                                                       right_projection_matrix, right_gray.shape[::-1], cv2.CV_32FC1)
+                                                       right_projection_matrix, right_gray.shape[::-1], cv2.CV_16SC2)
         # 创建立体相机标定数据对象
         # Create Stereo Camera Calibration Data Object
         stereo_calib_data = calib_data.StereoCalibData(obj_points, left_img_points, right_img_points,
