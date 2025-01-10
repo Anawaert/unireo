@@ -1,28 +1,28 @@
 """
 本模块定义了单目相机标定对象与畸变矫正函数，用于获取与使用单目相机的内参
-\n
+
 This module defines the monocular camera calibration object and distortion correction function, which are used to
 obtain and use the intrinsic parameters of the monocular camera
 """
 
 import cv2
 import numpy as np
-import calib.calib_data as calib_data
+import calib_data
 
 
 def get_calib_data(chessboard_size: tuple, img_size: tuple, img_series: list) -> calib_data.MonoCalibData:
     """
     获取单目相机标定数据
-    \n
-    Get Monocular Camera Calibration Data
 
-    :param chessboard_size: 棋盘格尺寸（长 × 宽） Chessboard Size (a × b)
-    :param img_size: 图像尺寸（宽度 × 高度） Image Size (w × h)
-    :param img_series: 图像序列（列表[字符串]） Image Sequence (List[AnyStr])
-    :return: 单目相机标定数据 Monocular Camera Calibration Data
+    Get monocular camera calibration data
+
+    :param chessboard_size: 棋盘格内角点尺寸（长 × 宽） Chessboard inner corner size (a × b)
+    :param img_size: 图像大小（宽度 × 高度） Image size (width × height)
+    :param img_series: 图像序列（列表[字符串]） Image sequence (List[AnyStr])
+    :return: 单目相机标定数据 Monocular camera calibration data
 
     示例（Example）：
-    \n
+
     mono_calib_data = mono_calib.get_calib_data((9, 6), (640, 480), ['path/to/image1.jpg', 'path/to/image2.jpg])
     """
     # 生成棋盘格角点的世界坐标
@@ -69,23 +69,23 @@ def get_calib_data(chessboard_size: tuple, img_size: tuple, img_series: list) ->
     # 创建单目相机标定数据对象
     # Create Monocular Camera Calibration Data Object
     mono_calib_data = calib_data.MonoCalibData(obj_points, img_points, camera_matrix, dist_coeffs, rvecs, tvecs,
-                                               new_camera_matrix, remap, roi)
+                                               new_camera_matrix, roi, remap)
 
     return mono_calib_data
 
 
 def undistort_img(img: np.ndarray, mono_calib_data: calib_data.MonoCalibData) -> np.ndarray:
     """
-    畸变矫正图像
-    \n
-    Correct Image Distortion
+    单目图像畸变矫正
 
-    :param img: 待矫正图像 Corrected Image
-    :param mono_calib_data: 单目相机标定数据 Monocular Camera Calibration Data
-    :return: 矫正后的图像 Corrected Image
+    Monocular image distortion correction
+
+    :param img: 待矫正图像 Image to be Corrected
+    :param mono_calib_data: 单目相机标定数据 Monocular camera calibration data
+    :return: 矫正后的图像 Corrected image
 
     示例（Example）：
-    \n
+
     undistorted_img = mono_calib.undistort_img(img, mono_calib_data)
     """
 
@@ -104,14 +104,14 @@ def undistort_img(img: np.ndarray, mono_calib_data: calib_data.MonoCalibData) ->
 def reprojection_error(mono_calib_data: calib_data.MonoCalibData) -> float:
     """
     计算投影误差
-    \n
-    Calculate the Reprojection Error
 
-    :param mono_calib_data: 单目相机标定数据 Monocular Camera Calibration Data
-    :return: 投影误差 Reprojection Error
+    Calculate the reprojection error
+
+    :param mono_calib_data: 单目相机标定数据 Monocular camera calibration data
+    :return: 投影误差 Reprojection error
 
     示例（Example）：
-    \n
+
     reprojection_error = mono_calib.reprojection_error(mono_calib_data)
     """
 

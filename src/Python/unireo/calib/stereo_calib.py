@@ -1,6 +1,6 @@
 """
 该模块定义了立体相机标定相关的函数
-\n
+
 This module defines functions related to stereo camera calibration
 """
 
@@ -13,17 +13,17 @@ def get_calib_data(chessboard_size: tuple, square_size: int, img_shape: tuple, l
                    right_img_series: list) -> calib_data.StereoCalibData:
     """
     获取立体相机标定数据
-    \n
-    Get Stereo Camera Calibration Data
-    :param chessboard_size: 棋盘格内角点尺寸（长 × 宽） Chessboard Inner Corner Size (a × b)
-    :param square_size: 棋盘格方块大小（单位：毫米） Chessboard Square Size (Unit: mm)
-    :param img_shape: 单目图像的形状（宽度 × 高度 × 通道） Image Size of Monocular (width × height × channel(s))
-    :param left_img_series: 左目图像序列（列表[字符串]） Left Eye Image Sequence (List[AnyStr])
-    :param right_img_series: 右目图像序列（列表[字符串]） Right Eye Image Sequence (List[AnyStr])
-    :return: 立体相机标定数据 Stereo Camera Calibration Data
+
+    Get stereo camera calibration data
+    :param chessboard_size: 棋盘格内角点尺寸（长 × 宽） Chessboard inner corner size (length × width)
+    :param square_size: 棋盘格方块尺寸 Chessboard square size
+    :param img_shape: 图像尺寸（高 × 宽 × 通道数） Image size (height × width × number of channels)
+    :param left_img_series: 左目图像序列 Left eye image sequence
+    :param right_img_series: 右目图像序列 Right eye image sequence
+    :return: 立体相机标定数据 Stereo camera calibration data
 
     示例（Example）：
-    \n
+
     stereo_calib_data = stereo_calib.get_calib_data((11, 8), 20, (1280, 720, 3),
      ['path/to/left1.jpg', 'path/to/left2.jpg'], ['path/to/right1.jpg', 'path/to/right2.jpg'])
     """
@@ -52,7 +52,13 @@ def get_calib_data(chessboard_size: tuple, square_size: int, img_shape: tuple, l
 
     # 迭代左目和右目图像序列
     # Iterate the Left Eye and Right Eye Image Sequences
-    for left_img_path, right_img_path in zip(left_img_series, right_img_series):
+
+    # 先进行排序，使得左目和右目图像一一对应
+    # Sort first to make the left and right eye images correspond one by one
+    left_img_series_sorted = sorted(left_img_series)
+    right_img_series_sorted = sorted(right_img_series)
+
+    for left_img_path, right_img_path in zip(left_img_series_sorted, right_img_series_sorted):
         # 读取左目和右目图像
         # Read the Left Eye and Right Eye Images
         left = cv2.imread(left_img_path)
@@ -141,15 +147,16 @@ def undistort_imgs(left_frame: np.ndarray, right_frame: np.ndarray,
                    stereo_calib_data: calib_data.StereoCalibData) -> tuple:
     """
     双目畸变图像矫正
-    \n
-    Stereo Distortion Image Correction
-    :param left_frame: 左目图像 Left Eye Image
-    :param right_frame: 右目图像 Right Eye Image
-    :param stereo_calib_data: 立体相机标定数据 Stereo Camera Calibration Data
-    :return: 矫正后的左目图像和右目图像 Corrected Left Eye Image and Right Eye Image
+
+    Stereo distortion image correction
+
+    :param left_frame: 左目图像 Left eye image
+    :param right_frame: 右目图像 Right eye image
+    :param stereo_calib_data: 立体相机标定数据 Stereo camera calibration data
+    :return: 矫正后的左目图像和右目图像 Corrected Left eye image and Right eye image
 
     示例（Example）：
-    \n
+
     undistorted_left, undistorted_right = stereo_calib.undistort_imgs(left_frame, right_frame)
     """
 
