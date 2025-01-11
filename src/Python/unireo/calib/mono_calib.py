@@ -7,7 +7,7 @@ obtain and use the intrinsic parameters of the monocular camera
 
 import cv2
 import numpy as np
-import calib_data
+import unireo.calib.calib_data as calib_data
 
 
 def get_calib_data(chessboard_size: tuple, img_size: tuple, img_series: list) -> calib_data.MonoCalibData:
@@ -64,12 +64,11 @@ def get_calib_data(chessboard_size: tuple, img_size: tuple, img_series: list) ->
                                                                             None)
 
     new_camera_matrix, roi = cv2.getOptimalNewCameraMatrix(camera_matrix, dist_coeffs, img_size, 1, img_size)
-    remap = cv2.initUndistortRectifyMap(camera_matrix, dist_coeffs, None, new_camera_matrix, img_size, cv2.CV_32FC1)
 
     # 创建单目相机标定数据对象
     # Create Monocular Camera Calibration Data Object
-    mono_calib_data = calib_data.MonoCalibData(obj_points, img_points, camera_matrix, dist_coeffs, rvecs, tvecs,
-                                               new_camera_matrix, roi, remap)
+    mono_calib_data = calib_data.MonoCalibData(img_size, obj_points, img_points, camera_matrix, dist_coeffs, rvecs, tvecs,
+                                               new_camera_matrix, roi)
 
     return mono_calib_data
 
@@ -89,9 +88,14 @@ def undistort_img(img: np.ndarray, mono_calib_data: calib_data.MonoCalibData) ->
     undistorted_img = mono_calib.undistort_img(img, mono_calib_data)
     """
 
+    remap = cv2.initUndistortRectifyMap(mono_calib_data.camera_matrix, mono_calib_data.dist_coeffs,
+                                        None, mono_calib_data.new_camera_matrix, mono_calib_data.image_size, cv2.CV_32FC1)
+    map_x = remap[0]
+    map_y = remap[1]
+
     # 畸变矫正
     # Distortion Correction
-    undistorted_img = cv2.remap(img, mono_calib_data.map_x, mono_calib_data.map_y, cv2.INTER_LINEAR)
+    undistorted_img = cv2.remap(img, map_x, map_y, cv2.INTER_LINEAR)
 
     # 裁剪图像有效区域
     # Crop the Effective Area of the Image

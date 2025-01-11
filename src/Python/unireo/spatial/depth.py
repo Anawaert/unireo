@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
-import calib.calib_data as calib_data
-import cam_info.cam_params as cam_params
+import unireo.calib.calib_data as calib_data
+import unireo.cam_info.cam_params as cam_params
 
 
 def generate_depth_img(left_img: np.ndarray, right_img: np.ndarray, stereo_calib_data: calib_data.StereoCalibData,

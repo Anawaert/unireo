@@ -16,6 +16,10 @@ class MonoCalibData:
     Monocular camera calibration data class, used to store data required for monocular camera calibration
     """
 
+    # 标定时使用的图像尺寸
+    # Image size used during calibration
+    image_size: tuple = None
+
     # 世界坐标系中的三维点
     # Three-dimensional points in the world coordinate system
     object_points: list = None
@@ -48,22 +52,15 @@ class MonoCalibData:
     # Rectification ROI
     remap_roi: Sequence = None
 
-    # 矫正矩阵（x方向）
-    # Rectification Matrix (x direction)
-    map_x: np.ndarray = None
-
-    # 矫正矩阵（y方向）
-    # Rectification Matrix (y direction)
-    map_y: np.ndarray = None
-
-    def __init__(self, object_points: list, image_points: list, camera_matrix: np.ndarray,
+    def __init__(self, image_size: tuple, object_points: list, image_points: list, camera_matrix: np.ndarray,
                  dist_coeffs: np.ndarray, rvecs: Sequence, tvecs: Sequence, new_camera_matrix: np.ndarray,
-                 remap_roi: Sequence, img_map: tuple):
+                 remap_roi: Sequence):
         """
         构造单目相机标定数据对象
 
         Construct monocular camera calibration data object
 
+        :param image_size: 图像尺寸 Image size
         :param object_points: 标定板三维点 Calibration board three-dimensional points
         :param image_points: 图像二维点 Image two-dimensional points
         :param camera_matrix: 相机内参矩阵 Camera intrinsic matrix
@@ -72,8 +69,8 @@ class MonoCalibData:
         :param tvecs: 平移向量 Translation vector
         :param new_camera_matrix: 新的相机内参矩阵 New camera intrinsic matrix
         :param remap_roi: 矫正ROI Rectification ROI
-        :param img_map: 矫正矩阵 Rectification matrix
         """
+        self.image_size = image_size
         self.object_points = object_points
         self.image_points = image_points
         self.camera_matrix = camera_matrix
@@ -81,8 +78,6 @@ class MonoCalibData:
         self.rvecs = rvecs
         self.tvecs = tvecs
         self.new_camera_matrix = new_camera_matrix
-        self.map_x = img_map[0]
-        self.map_y = img_map[1]
         self.remap_roi = remap_roi
 
 
@@ -92,6 +87,10 @@ class StereoCalibData:
 
     Stereo camera calibration data class, used to store data required for stereo camera calibration
     """
+
+    # 标定时使用的图像形状（单目图像的高 × 宽 × 通道数）
+    # Image shape used during calibration (height × width × number of channels of monocular image)
+    image_shape: tuple = None
 
     # 世界坐标系中的三维点
     # Three-dimensional points in the world coordinate system
@@ -108,6 +107,10 @@ class StereoCalibData:
     # 左目相机内参矩阵
     # Left Eye Camera Intrinsic Matrix
     left_cam_matrix: np.ndarray = None
+
+    # 左目相机的修正内参矩阵
+    # Left Eye Camera Rectified Intrinsic Matrix
+    left_new_camera_matrix: np.ndarray = None
 
     # 左目畸变系数
     # Left Eye Distortion Coefficients
@@ -129,17 +132,13 @@ class StereoCalibData:
     # Left Eye Projection Matrix
     left_projection_matrix: np.ndarray = None
 
-    # 左目立体映射（x方向）
-    # Left Eye Stereo Mapping (x direction)
-    left_stereo_map_x: np.ndarray = None
-
-    # 左目立体映射（y方向）
-    # Left Eye Stereo Mapping (y direction)
-    left_stereo_map_y: np.ndarray = None
-
     # 右目相机内参矩阵
     # Right Eye Camera Intrinsic Matrix
     right_cam_matrix: np.ndarray = None
+
+    # 右目相机的修正内参矩阵
+    # Right Eye Camera Rectified Intrinsic Matrix
+    right_new_camera_matrix: np.ndarray = None
 
     # 右目畸变系数
     # Right Eye Distortion Coefficients
@@ -161,14 +160,6 @@ class StereoCalibData:
     # Right Eye Projection Matrix
     right_projection_matrix: np.ndarray = None
 
-    # 右目立体映射（x方向）
-    # Right Eye Stereo Mapping (x direction)
-    right_stereo_map_x: np.ndarray = None
-
-    # 右目立体映射（y方向）
-    # Right Eye Stereo Mapping (y direction)
-    right_stereo_map_y: np.ndarray = None
-
     # 旋转矩阵
     # Rotation Matrix
     r_matrix: np.ndarray = None
@@ -189,35 +180,37 @@ class StereoCalibData:
     # Q Matrix
     q_matrix: np.ndarray = None
 
-    def __init__(self, object_points: list, left_image_points: list, right_image_points: list,
-                 left_camera_matrix: np.ndarray, left_dist_coeffs: np.ndarray, left_rvecs: Sequence,
-                 left_tvecs: Sequence, left_rectification_matrix: np.ndarray, left_projection_matrix: np.ndarray,
-                 left_stereo_map: tuple, right_camera_matrix: np.ndarray, right_dist_coeffs: np.ndarray,
+    def __init__(self, image_shape: tuple, object_points: list, left_image_points: list, right_image_points: list,
+                 left_camera_matrix: np.ndarray, left_new_camera_matrix: np.ndarray, left_dist_coeffs: np.ndarray,
+                 left_rvecs: Sequence, left_tvecs: Sequence, left_rectification_matrix: np.ndarray,
+                 left_projection_matrix: np.ndarray, right_camera_matrix: np.ndarray,
+                 right_new_camera_matrix: np.ndarray, right_dist_coeffs: np.ndarray,
                  right_rvecs: Sequence, right_tvecs: Sequence, right_rectification_matrix: np.ndarray,
-                 right_projection_matrix: np.ndarray, right_stereo_map: tuple, r_matrix: np.ndarray,
-                 t_vector: np.ndarray, e_matrix: np.ndarray, f_matrix: np.ndarray, q_matrix: np.ndarray):
+                 right_projection_matrix: np.ndarray, r_matrix: np.ndarray, t_vector: np.ndarray, e_matrix: np.ndarray,
+                 f_matrix: np.ndarray, q_matrix: np.ndarray):
         """
         构造双目相机标定数据对象
 
         Construct stereo camera calibration data object
 
+        :param image_shape: 图像形状 Image shape
         :param object_points: 标定板三维点 Calibration board three-dimensional points
         :param left_image_points: 左目图像二维点 Left eye image two-dimensional points
         :param right_image_points: 右目图像二维点 Right eye image two-dimensional points
         :param left_camera_matrix: 左目相机内参矩阵 Left eye camera intrinsic matrix
+        :param left_new_camera_matrix: 左目相机的修正内参矩阵 Left eye camera rectified intrinsic matrix
         :param left_dist_coeffs: 左目畸变系数 Left eye distortion coefficients
         :param left_rvecs: 左目旋转向量 Left eye rotation vector
         :param left_tvecs: 左目平移向量 Left eye translation vector
         :param left_rectification_matrix: 左目矫正矩阵 Left eye rectification matrix
         :param left_projection_matrix: 左目投影矩阵 Left eye projection matrix
-        :param left_stereo_map: 左目立体映射 Left eye stereo mapping
         :param right_camera_matrix: 右目相机内参矩阵 Right eye camera intrinsic matrix
+        :param right_new_camera_matrix: 右目相机的修正内参矩阵 Right eye camera rectified intrinsic matrix
         :param right_dist_coeffs: 右目畸变系数 Right eye distortion coefficients
         :param right_rvecs: 右目旋转向量 Right eye rotation vector
         :param right_tvecs: 右目平移向量 Right eye translation vector
         :param right_rectification_matrix: 右目矫正矩阵 Right eye rectification matrix
         :param right_projection_matrix: 右目投影矩阵 Right eye projection matrix
-        :param right_stereo_map: 右目立体映射 Right eye stereo mapping
         :param r_matrix: 旋转矩阵 Rotation matrix
         :param t_vector: 平移向量 Translation vector
         :param e_matrix: 本质矩阵 Essential matrix
@@ -225,25 +218,24 @@ class StereoCalibData:
         :param q_matrix: 立体解算矩阵 Q matrix
         """
 
+        self.image_shape = image_shape
         self.obj_points = object_points
         self.left_img_points = left_image_points
         self.right_img_points = right_image_points
         self.left_cam_matrix = left_camera_matrix
+        self.left_new_camera_matrix = left_new_camera_matrix
         self.left_dist_coeffs = left_dist_coeffs
         self.left_rvecs = left_rvecs
         self.left_tvecs = left_tvecs
         self.left_rect_matrix = left_rectification_matrix
         self.left_projection_matrix = left_projection_matrix
-        self.left_stereo_map_x = left_stereo_map[0]
-        self.left_stereo_map_y = left_stereo_map[1]
         self.right_cam_matrix = right_camera_matrix
+        self.right_new_camera_matrix = right_new_camera_matrix
         self.right_dist_coeffs = right_dist_coeffs
         self.right_rvecs = right_rvecs
         self.right_tvecs = right_tvecs
         self.right_rect_matrix = right_rectification_matrix
         self.right_projection_matrix = right_projection_matrix
-        self.right_stereo_map_x = right_stereo_map[0]
-        self.right_stereo_map_y = right_stereo_map[1]
         self.r_matrix = r_matrix
         self.t_vector = t_vector
         self.e_matrix = e_matrix

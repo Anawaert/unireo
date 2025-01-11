@@ -9,9 +9,9 @@ import cv2
 import numpy as np
 import os
 import time
-import cam_info.cam_params as cam_params
-import err_proc.error_code as err_code
-import err_proc.exceptions as exceptions
+import unireo.cam_info.cam_params as cam_params
+import unireo.err_proc.error_code as err_code
+import unireo.err_proc.exceptions as exceptions
 
 
 class Camera:

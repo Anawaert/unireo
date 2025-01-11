@@ -5,7 +5,7 @@ This module defines some common extension functions for controlling the program 
 """
 
 import cv2
-import utils.shared_vars as sv
+import unireo.utils.shared_vars as sv
 
 
 def global_waitKey() -> int:

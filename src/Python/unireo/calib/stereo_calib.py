@@ -6,7 +6,7 @@ This module defines functions related to stereo camera calibration
 
 import cv2
 import numpy as np
-import calib.calib_data as calib_data
+import unireo.calib.calib_data as calib_data
 
 
 def get_calib_data(chessboard_size: tuple, square_size: int, img_shape: tuple, left_img_series: list,
@@ -24,7 +24,7 @@ def get_calib_data(chessboard_size: tuple, square_size: int, img_shape: tuple, l
 
     示例（Example）：
 
-    stereo_calib_data = stereo_calib.get_calib_data((11, 8), 20, (1280, 720, 3),
+    stereo_calib_data = unireo.stereo_calib.get_calib_data((11, 8), 20, (1280, 720, 3),
      ['path/to/left1.jpg', 'path/to/left2.jpg'], ['path/to/right1.jpg', 'path/to/right2.jpg'])
     """
 
@@ -123,22 +123,16 @@ def get_calib_data(chessboard_size: tuple, square_size: int, img_shape: tuple, l
                                                             right_dist_coeffs, left_gray.shape[::-1], rotation_matrix,
                                                             translation_vector, rectification_scale, (0, 0))
 
-        left_stereo_map = cv2.initUndistortRectifyMap(new_left_camera_matrix, left_dist_coeffs,
-                                                      left_rectification_matrix,
-                                                      left_projection_matrix, left_gray.shape[::-1], cv2.CV_16SC2)
-        right_stereo_map = cv2.initUndistortRectifyMap(new_right_camera_matrix, right_dist_coeffs,
-                                                       right_rectification_matrix,
-                                                       right_projection_matrix, right_gray.shape[::-1], cv2.CV_16SC2)
         # 创建立体相机标定数据对象
         # Create Stereo Camera Calibration Data Object
-        stereo_calib_data = calib_data.StereoCalibData(obj_points, left_img_points, right_img_points,
-                                                       left_camera_matrix, left_dist_coeffs, left_rvecs, left_tvecs,
-                                                       left_rectification_matrix, left_projection_matrix,
-                                                       left_stereo_map, right_camera_matrix, right_dist_coeffs,
-                                                       right_rvecs, right_tvecs, right_rectification_matrix,
-                                                       right_projection_matrix, right_stereo_map, rotation_matrix,
-                                                       translation_vector, essential_matrix, fundamental_matrix,
-                                                       q_matrix)
+        stereo_calib_data = calib_data.StereoCalibData(img_shape, obj_points, left_img_points, right_img_points,
+                                                       left_camera_matrix, new_left_camera_matrix, left_dist_coeffs,
+                                                       left_rvecs, left_tvecs, left_rectification_matrix,
+                                                       left_projection_matrix, right_camera_matrix,
+                                                       new_right_camera_matrix, right_dist_coeffs, right_rvecs,
+                                                       right_tvecs, right_rectification_matrix, right_projection_matrix,
+                                                       rotation_matrix, translation_vector, essential_matrix,
+                                                       fundamental_matrix, q_matrix)
 
         return stereo_calib_data
 
@@ -157,12 +151,30 @@ def undistort_imgs(left_frame: np.ndarray, right_frame: np.ndarray,
 
     示例（Example）：
 
-    undistorted_left, undistorted_right = stereo_calib.undistort_imgs(left_frame, right_frame)
+    undistorted_left, undistorted_right = unireo.stereo_calib.undistort_imgs(left_frame, right_frame)
     """
 
-    ud_left = cv2.remap(left_frame, stereo_calib_data.left_stereo_map_x, stereo_calib_data.left_stereo_map_y,
-                        cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
-    ud_right = cv2.remap(right_frame, stereo_calib_data.right_stereo_map_x, stereo_calib_data.right_stereo_map_y,
-                         cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
+    left_stereo_map = cv2.initUndistortRectifyMap(stereo_calib_data.left_new_camera_matrix,
+                                                  stereo_calib_data.left_dist_coeffs,
+                                                  stereo_calib_data.left_rect_matrix,
+                                                  stereo_calib_data.left_projection_matrix,
+                                                  cv2.cvtColor(left_frame, cv2.COLOR_BGR2GRAY).shape[::-1],
+                                                  cv2.CV_16SC2)
+    right_stereo_map = cv2.initUndistortRectifyMap(stereo_calib_data.right_new_camera_matrix,
+                                                   stereo_calib_data.right_dist_coeffs,
+                                                   stereo_calib_data.right_rect_matrix,
+                                                   stereo_calib_data.right_projection_matrix,
+                                                   cv2.cvtColor(right_frame, cv2.COLOR_BGR2GRAY).shape[::-1],
+                                                   cv2.CV_16SC2)
+
+    left_stereo_map_x = left_stereo_map[0]
+    left_stereo_map_y = left_stereo_map[1]
+    right_stereo_map_x = right_stereo_map[0]
+    right_stereo_map_y = right_stereo_map[1]
+
+    ud_left = cv2.remap(left_frame, left_stereo_map_x, left_stereo_map_y, cv2.INTER_LANCZOS4,
+                        cv2.BORDER_CONSTANT, 0)
+    ud_right = cv2.remap(right_frame, right_stereo_map_x, right_stereo_map_y, cv2.INTER_LANCZOS4,
+                         cv2.BORDER_CONSTANT, 0)
 
     return ud_left, ud_right
